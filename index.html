@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Artemis · Poemas que se rompen</title>
+<meta name="description" content="Artemis. Poesía que sangra, que respira, que no se deja leer en silencio." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
+<style>
+/* ==========================================================
+   RESET + BASE
+   ========================================================== */
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; background: #000; }
+body {
+  font-family: 'Instrument Serif', 'Times New Roman', serif;
+  background: #000;
+  color: #fff;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  cursor: none;
+  font-weight: 400;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+@media (max-width: 720px) { body { cursor: auto; } }
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; background: none; border: none; color: inherit; cursor: pointer; }
+img, video { max-width: 100%; display: block; }
+::selection { background: rgba(255,255,255,0.2); color: #fff; }
+
+/* Tailwind-style helpers used inline */
+.hidden { display: none !important; }
+
+/* ==========================================================
+   LIQUID GLASS
+   ========================================================== */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%,
+    rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0) 40%,
+    rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.15) 80%,
+    rgba(255,255,255,0.45) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ==========================================================
+   CURSOR (custom — like ink dropping)
+   ========================================================== */
+.cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  width: 6px; height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: difference;
+  z-index: 9999;
+  transition: width 0.3s, height 0.3s, opacity 0.3s;
+}
+.cursor-ring {
+  position: fixed;
+  top: 0; left: 0;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9998;
+  transition: width 0.3s, height 0.3s, opacity 0.3s, border-color 0.3s;
+}
+.cursor-dot.is-hovering { width: 0; height: 0; opacity: 0; }
+.cursor-ring.is-hovering { width: 64px; height: 64px; border-color: rgba(255,255,255,0.8); }
+@media (max-width: 720px) { .cursor-dot, .cursor-ring { display: none; } }
+
+/* ==========================================================
+   PRELOAD GATE
+   ========================================================== */
+.gate { position: fixed; inset: 0; background: #000; z-index: 9000; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.gate__line { position: absolute; left: 0; right: 0; background: #000; transition: transform 1.4s cubic-bezier(0.76, 0, 0.24, 1); }
+.gate__line--top { top: 0; height: 50%; }
+.gate__line--bottom { bottom: 0; height: 50%; }
+.gate__word { font-family: 'Instrument Serif', serif; font-style: italic; font-size: clamp(2rem, 6vw, 4rem); color: #fff; opacity: 0; transform: translateY(20px); transition: opacity 1.2s ease, transform 1.2s ease; }
+.gate.is-loaded .gate__word { opacity: 0; transform: translateY(-30px); transition-delay: 0s; }
+.gate.is-loaded .gate__line--top { transform: translateY(-100%); transition-delay: 0.4s; }
+.gate.is-loaded .gate__line--bottom { transform: translateY(100%); transition-delay: 0.4s; }
+.gate.is-shown .gate__word { opacity: 1; transform: translateY(0); }
+
+/* ==========================================================
+   AMBIENT BACKDROP
+   ========================================================== */
+.backdrop {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -10%, rgba(255,255,255,0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 110%, rgba(255,255,255,0.02) 0%, transparent 60%);
+}
+
+/* ==========================================================
+   NAV — top pill
+   ========================================================== */
+.nav {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: calc(100% - 32px);
+  max-width: 1024px;
+}
+.nav__pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px 12px 24px;
+  border-radius: 999px;
+  gap: 16px;
+}
+.nav__brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Instrument Serif', serif;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  font-style: italic;
+  flex-shrink: 0;
+}
+.nav__brand svg { width: 22px; height: 22px; stroke: #fff; }
+
+.nav__center {
+  display: flex; gap: 28px; align-items: center;
+}
+.nav__link {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.65);
+  transition: color 0.3s;
+  cursor: pointer;
+}
+.nav__link:hover, .nav__link.is-active { color: #fff; }
+
+.nav__right {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.nav__icon-btn {
+  width: 38px; height: 38px;
+  border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.85);
+  transition: background 0.3s, color 0.3s;
+  cursor: pointer;
+}
+.nav__icon-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.nav__icon-btn svg { width: 18px; height: 18px; stroke-width: 1.6; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+
+.nav__cta {
+  display: inline-flex; align-items: center;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 14px;
+  padding: 9px 20px;
+  border-radius: 999px;
+  color: #fff;
+}
+
+@media (max-width: 860px) {
+  .nav__center { display: none; }
+}
+@media (max-width: 540px) {
+  .nav__cta span { display: none; }
+  .nav__pill { padding: 10px 8px 10px 16px; }
+}
+
+/* ==========================================================
+   BREADCRUMBS
+   ========================================================== */
+.crumbs {
+  position: fixed;
+  top: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 49;
+  width: calc(100% - 32px);
+  max-width: 1024px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+.crumbs.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.crumbs:not(.is-visible) {
+  transform: translateX(-50%) translateY(-12px);
+}
+.crumbs__inner {
+  display: flex;
+  align-items: center;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  gap: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.crumbs__path { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; overflow: hidden; }
+.crumbs__sep { color: rgba(255,255,255,0.3); font-size: 10px; }
+.crumbs__seg {
+  cursor: pointer;
+  transition: color 0.3s;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.crumbs__seg:hover { color: #fff; }
+.crumbs__seg.is-current { color: #fff; pointer-events: none; }
+.crumbs__count {
+  font-style: italic; text-transform: none; letter-spacing: 0.02em;
+  font-family: 'Instrument Serif', serif; font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+  padding-left: 12px; margin-left: 4px;
+  border-left: 1px solid rgba(255,255,255,0.12);
+}
+
+/* ==========================================================
+   SEARCH MODAL
+   ========================================================== */
+.search {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 8000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 120px 24px 60px;
+  overflow-y: auto;
+}
+.search.is-open { opacity: 1; pointer-events: auto; }
+.search__inner {
+  width: 100%; max-width: 720px;
+}
+.search__bar {
+  display: flex; align-items: center;
+  padding: 8px 8px 8px 20px;
+  border-radius: 999px;
+  gap: 12px;
+}
+.search__bar svg { width: 20px; height: 20px; stroke: rgba(255,255,255,0.5); flex-shrink: 0; stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.search__input {
+  flex: 1;
+  background: transparent;
+  border: none; outline: none;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 22px;
+  color: #fff;
+  padding: 14px 0;
+}
+.search__input::placeholder { color: rgba(255,255,255,0.35); }
+.search__close {
+  width: 44px; height: 44px;
+  border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.6);
+  transition: color 0.3s, background 0.3s;
+}
+.search__close:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.search__close svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; }
+
+.search__results {
+  margin-top: 24px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.search__result {
+  padding: 18px 20px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 0.25s;
+  border: 1px solid transparent;
+}
+.search__result:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+.search__result-crumbs {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 8px;
+}
+.search__result-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 22px;
+  color: #fff;
+  margin-bottom: 4px;
+  font-style: italic;
+}
+.search__result-excerpt {
+  font-family: 'Instrument Serif', serif;
+  font-size: 15px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.5;
+}
+.search__result mark {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+.search__hint {
+  text-align: center;
+  margin-top: 32px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+}
+.search__empty {
+  text-align: center;
+  padding: 60px 20px;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: rgba(255,255,255,0.4);
+}
+
+/* ==========================================================
+   VIEW TRANSITIONS
+   ========================================================== */
+.view {
+  position: relative;
+  z-index: 2;
+  transition: opacity 0.4s ease;
+}
+.view.is-leaving { opacity: 0; }
+
+/* ==========================================================
+   1. HERO
+   ========================================================== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.hero__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: bottom;
+  opacity: 0;
+  z-index: 0;
+}
+.hero__nav-spacer { height: 100px; flex-shrink: 0; }
+.hero__content {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px 48px;
+  text-align: center;
+  transform: translateY(-8%);
+}
+.hero__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(3.5rem, 12vw, 9rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #fff;
+  white-space: nowrap;
+  margin-bottom: 48px;
+  font-weight: 400;
+}
+.hero__title em { font-style: italic; }
+
+.hero__email {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 8px 8px 24px;
+  border-radius: 999px;
+  width: 100%;
+  max-width: 520px;
+  margin-bottom: 28px;
+}
+.hero__email input {
+  flex: 1;
+  background: transparent;
+  border: none; outline: none;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: #fff;
+  padding: 12px 0;
+}
+.hero__email input::placeholder { color: rgba(255,255,255,0.4); }
+.hero__email button {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.hero__email button:hover { transform: translateX(3px) rotate(-12deg); }
+.hero__email button svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+.hero__subtitle {
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.6;
+  font-style: italic;
+  max-width: 520px;
+  padding: 0 16px;
+  margin-bottom: 32px;
+  color: rgba(255,255,255,0.75);
+}
+
+.hero__manifesto {
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: #fff;
+  transition: background 0.3s;
+}
+.hero__manifesto:hover { background: rgba(255,255,255,0.04); }
+
+.hero__social {
+  position: relative;
+  z-index: 10;
+  display: flex; justify-content: center; gap: 14px;
+  padding-bottom: 48px;
+}
+.hero__social a {
+  padding: 14px;
+  border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.8);
+  transition: color 0.3s, background 0.3s;
+}
+.hero__social a:hover { color: #fff; background: rgba(255,255,255,0.04); }
+.hero__social svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+@media (max-width: 540px) {
+  .hero__title { white-space: normal; }
+}
+
+/* ==========================================================
+   2. ABOUT
+   ========================================================== */
+.about {
+  background: #000;
+  padding: 128px 24px 56px;
+  overflow: hidden;
+  position: relative;
+}
+@media (min-width: 768px) { .about { padding: 176px 24px 56px; } }
+.about::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at top, rgba(255,255,255,0.03) 0%, transparent 70%);
+  pointer-events: none;
+}
+.about__inner { max-width: 1100px; margin: 0 auto; position: relative; }
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 32px;
+  display: inline-flex; align-items: center; gap: 12px;
+}
+.section-label::before {
+  content: '';
+  display: inline-block;
+  width: 28px; height: 1px;
+  background: rgba(255,255,255,0.4);
+}
+
+.about__title {
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #fff;
+  font-weight: 400;
+}
+.about__title em {
+  font-style: italic;
+  color: rgba(255,255,255,0.55);
+}
+
+/* ==========================================================
+   3. FEATURED VIDEO
+   ========================================================== */
+.featured {
+  background: #000;
+  padding: 24px 24px 80px;
+  overflow: hidden;
+  position: relative;
+}
+@media (min-width: 768px) { .featured { padding: 40px 24px 128px; } }
+.featured__inner { max-width: 1200px; margin: 0 auto; }
+.featured__container {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+}
+.featured__video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+.featured__overlay-grad {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent 50%, transparent);
+  pointer-events: none;
+}
+.featured__overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+@media (min-width: 768px) { .featured__overlay { padding: 40px; } }
+
+.featured__card {
+  padding: 24px;
+  border-radius: 20px;
+  max-width: 420px;
+}
+@media (min-width: 768px) { .featured__card { padding: 32px; } }
+.featured__card-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 12px;
+}
+.featured__card-body {
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.6;
+  font-style: italic;
+}
+@media (min-width: 768px) { .featured__card-body { font-size: 17px; } }
+
+.featured__btn {
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: #fff;
+  display: inline-flex; align-items: center; gap: 10px;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+  cursor: pointer;
+}
+.featured__btn:hover { transform: scale(1.04); }
+.featured__btn:active { transform: scale(0.96); }
+
+/* ==========================================================
+   4. PHILOSOPHY
+   ========================================================== */
+.philosophy {
+  background: #000;
+  padding: 112px 24px;
+  overflow: hidden;
+  position: relative;
+}
+@media (min-width: 768px) { .philosophy { padding: 160px 24px; } }
+.philosophy__inner { max-width: 1200px; margin: 0 auto; }
+
+.philosophy__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(3rem, 9vw, 8rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin-bottom: 64px;
+  font-weight: 400;
+}
+@media (min-width: 768px) { .philosophy__title { margin-bottom: 96px; } }
+.philosophy__title em {
+  font-style: italic;
+  color: rgba(255,255,255,0.4);
+  display: inline-block;
+  padding: 0 0.15em;
+}
+
+.philosophy__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+@media (min-width: 768px) {
+  .philosophy__grid { grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+}
+
+.philosophy__video-wrap {
+  border-radius: 28px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  position: relative;
+}
+.philosophy__video-wrap video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.philosophy__text { display: flex; flex-direction: column; }
+.philosophy__block { padding: 24px 0; }
+.philosophy__divider { width: 100%; height: 1px; background: rgba(255,255,255,0.1); }
+.philosophy__block-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 16px;
+}
+.philosophy__block-body {
+  font-family: 'Instrument Serif', serif;
+  font-size: 17px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.7);
+}
+@media (min-width: 768px) { .philosophy__block-body { font-size: 19px; } }
+
+/* ==========================================================
+   5. POEMARIOS (Services)
+   ========================================================== */
+.poemarios {
+  background: #000;
+  padding: 112px 24px;
+  position: relative;
+  overflow: hidden;
+}
+@media (min-width: 768px) { .poemarios { padding: 160px 24px; } }
+.poemarios::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.02) 0%, transparent 60%);
+  pointer-events: none;
+}
+.poemarios__inner { max-width: 1200px; margin: 0 auto; position: relative; }
+
+.poemarios__head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 56px;
+  flex-wrap: wrap; gap: 16px;
+}
+.poemarios__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(2.2rem, 5.4vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  font-weight: 400;
+}
+.poemarios__title em { font-style: italic; color: rgba(255,255,255,0.55); }
+.poemarios__sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+@media (max-width: 720px) { .poemarios__sub { display: none; } }
+
+.poemarios__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 768px) {
+  .poemarios__grid { grid-template-columns: repeat(3, 1fr); gap: 28px; }
+}
+@media (max-width: 1023px) and (min-width: 768px) {
+  .poemarios__grid { grid-template-columns: 1fr 1fr; }
+}
+
+.poemario-card {
+  border-radius: 28px;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  position: relative;
+}
+.poemario-card__media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+.poemario-card__media video {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+.poemario-card:hover .poemario-card__media video { transform: scale(1.06); }
+.poemario-card__media-grad {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.5), transparent 50%);
+}
+
+.poemario-card__body { padding: 24px; }
+@media (min-width: 768px) { .poemario-card__body { padding: 32px; } }
+
+.poemario-card__top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px;
+}
+.poemario-card__tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+}
+.poemario-card__arrow {
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.poemario-card:hover .poemario-card__arrow { transform: translate(4px, -4px) rotate(-15deg); }
+.poemario-card__arrow svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+.poemario-card__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 14px;
+  font-style: italic;
+  font-weight: 400;
+}
+@media (min-width: 768px) { .poemario-card__title { font-size: 28px; } }
+.poemario-card__desc {
+  font-family: 'Instrument Serif', serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.55);
+}
+@media (min-width: 768px) { .poemario-card__desc { font-size: 15px; } }
+
+/* ==========================================================
+   POEMARIO DETAIL VIEW
+   ========================================================== */
+.poemario-detail {
+  padding: 160px 24px 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+.poemario-detail__head {
+  margin-bottom: 80px;
+}
+.poemario-detail__year {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 20px;
+}
+.poemario-detail__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(3rem, 9vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin-bottom: 40px;
+  font-style: italic;
+  font-weight: 400;
+}
+.poemario-detail__desc {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  line-height: 1.55;
+  color: rgba(255,255,255,0.7);
+  max-width: 60ch;
+  margin-bottom: 28px;
+}
+.poemario-detail__epigraph {
+  font-style: italic;
+  color: rgba(255,255,255,0.5);
+  font-size: 17px;
+  border-left: 2px solid rgba(255,255,255,0.2);
+  padding-left: 16px;
+  max-width: 50ch;
+}
+.poemario-detail__poems {
+  display: flex; flex-direction: column;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.poemario-detail__poem {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  gap: 24px;
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  align-items: center;
+  cursor: pointer;
+  transition: padding 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
+.poemario-detail__poem::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.02);
+  transform: translateX(-100%);
+  transition: transform 0.6s cubic-bezier(0.65,0,0.35,1);
+}
+.poemario-detail__poem:hover::before { transform: translateX(0); }
+.poemario-detail__poem:hover { padding-left: 24px; padding-right: 24px; }
+.poemario-detail__poem > * { position: relative; z-index: 1; }
+.poemario-detail__poem-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+}
+.poemario-detail__poem-title {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 22px;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.poemario-detail__poem-arrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.poemario-detail__poem-arrow::after {
+  content: '→';
+  transition: transform 0.3s;
+}
+.poemario-detail__poem:hover .poemario-detail__poem-arrow::after { transform: translateX(6px); }
+
+@media (max-width: 720px) {
+  .poemario-detail__poem { grid-template-columns: 1fr; gap: 8px; padding: 20px 0; }
+  .poemario-detail__poem:hover { padding-left: 0; padding-right: 0; }
+  .poemario-detail__poem-arrow { display: none; }
+}
+
+/* ==========================================================
+   POEM DETAIL VIEW
+   ========================================================== */
+.poem-detail {
+  padding: 180px 24px 120px;
+  max-width: 760px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.poem-detail__numeral {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 15px;
+  letter-spacing: 0.4em;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+.poem-detail__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  letter-spacing: -0.02em;
+  color: #fff;
+  font-style: italic;
+  margin-bottom: 56px;
+  font-weight: 400;
+  line-height: 1.1;
+}
+.poem-detail__verses {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  line-height: 1.6;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 80px;
+  white-space: pre-wrap;
+}
+.poem-detail__verses em { font-style: italic; color: rgba(255,255,255,0.55); }
+.poem-detail__nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 40px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  gap: 24px;
+}
+.poem-detail__nav-btn {
+  display: inline-flex; flex-direction: column; gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  transition: color 0.3s;
+  text-align: left;
+}
+.poem-detail__nav-btn:hover { color: #fff; }
+.poem-detail__nav-btn.is-right { text-align: right; }
+.poem-detail__nav-btn span {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 16px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: rgba(255,255,255,0.7);
+}
+.poem-detail__nav-btn:hover span { color: #fff; }
+.poem-detail__nav-btn.is-disabled { opacity: 0; pointer-events: none; }
+
+/* ==========================================================
+   POEMARIOS INDEX VIEW
+   ========================================================== */
+.poemarios-index {
+  padding: 160px 24px 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+.poemarios-index__head { margin-bottom: 80px; }
+.poemarios-index__title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(3rem, 9vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: #fff;
+  font-weight: 400;
+}
+.poemarios-index__title em { font-style: italic; color: rgba(255,255,255,0.55); }
+.poemarios-index__sub {
+  font-family: 'Instrument Serif', serif;
+  font-size: 19px;
+  font-style: italic;
+  color: rgba(255,255,255,0.55);
+  margin-top: 24px;
+  max-width: 50ch;
+}
+
+/* ==========================================================
+   FOOTER
+   ========================================================== */
+.foot {
+  position: relative;
+  padding: 96px 24px 56px;
+  text-align: center;
+  z-index: 2;
+}
+.foot__verse {
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-style: italic;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 80px;
+  line-height: 1.4;
+  font-family: 'Instrument Serif', serif;
+}
+.foot__verse em { color: rgba(255,255,255,0.85); }
+.foot__meta {
+  display: flex; justify-content: space-between; align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  flex-wrap: wrap; gap: 16px;
+}
+
+/* ==========================================================
+   REVEAL ANIMATIONS
+   ========================================================== */
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1); }
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.reveal-x-l { opacity: 0; transform: translateX(-30px); transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1); }
+.reveal-x-l.is-visible { opacity: 1; transform: translateX(0); }
+.reveal-x-r { opacity: 0; transform: translateX(30px); transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1), transform 0.9s cubic-bezier(0.16,1,0.3,1); }
+.reveal-x-r.is-visible { opacity: 1; transform: translateX(0); }
+[data-stagger="2"] { transition-delay: 0.15s; }
+[data-stagger="3"] { transition-delay: 0.3s; }
+
+/* ==========================================================
+   ACCESSIBILITY
+   ========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ====================================================================
+     CUSTOM CURSOR
+     ==================================================================== -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ====================================================================
+     OPENING GATE
+     ==================================================================== -->
+<div class="gate" id="gate">
+  <div class="gate__line gate__line--top"></div>
+  <div class="gate__line gate__line--bottom"></div>
+  <span class="gate__word">respira.</span>
+</div>
+
+<!-- ====================================================================
+     AMBIENT BACKDROP
+     ==================================================================== -->
+<div class="backdrop"></div>
+
+<!-- ====================================================================
+     NAV
+     ==================================================================== -->
+<nav class="nav">
+  <div class="nav__pill liquid-glass">
+    <a class="nav__brand" data-route="/" data-hover>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+      Artemis
+    </a>
+    <div class="nav__center">
+      <a class="nav__link" data-route="/poemarios" data-hover>Poemarios</a>
+      <a class="nav__link" data-route="/manifiesto" data-hover>Manifiesto</a>
+      <a class="nav__link" data-route="/lecturas" data-hover>Lecturas</a>
+      <a class="nav__link" data-route="/sobre" data-hover>Sobre</a>
+    </div>
+    <div class="nav__right">
+      <button class="nav__icon-btn" id="searchOpen" aria-label="Buscar" data-hover>
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      </button>
+      <a class="nav__cta liquid-glass" data-route="/encuentro" data-hover><span>escríbeme</span></a>
+    </div>
+  </div>
+</nav>
+
+<!-- ====================================================================
+     BREADCRUMBS
+     ==================================================================== -->
+<div class="crumbs" id="crumbs">
+  <div class="crumbs__inner liquid-glass">
+    <div class="crumbs__path" id="crumbsPath"></div>
+    <span class="crumbs__count" id="crumbsCount"></span>
+  </div>
+</div>
+
+<!-- ====================================================================
+     SEARCH MODAL
+     ==================================================================== -->
+<div class="search" id="searchModal">
+  <div class="search__inner">
+    <div class="search__bar liquid-glass">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input class="search__input" id="searchInput" type="text" placeholder="busca un verso, un poema, un libro…" autocomplete="off" />
+      <button class="search__close" id="searchClose" data-hover aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="search__results" id="searchResults"></div>
+    <p class="search__hint">esc para cerrar · enter para abrir</p>
+  </div>
+</div>
+
+<!-- ====================================================================
+     VIEWS
+     ==================================================================== -->
+
+<!-- HOME -->
+<main class="view" id="view-home">
+
+  <!-- 1. HERO -->
+  <section class="hero">
+    <video class="hero__video" id="heroVideo" muted autoplay loop playsinline preload="auto">
+      <source src="media/avatar.mp4" type="video/mp4">
+    </video>
+    <div class="hero__nav-spacer"></div>
+
+    <div class="hero__content">
+      <h1 class="hero__title">Léelo <em>todo</em>.</h1>
+
+      <form class="hero__email liquid-glass" onsubmit="event.preventDefault(); this.querySelector('input').value=''; this.querySelector('input').placeholder='gracias.';">
+        <input type="email" placeholder="tu correo · una palabra" required />
+        <button type="submit" data-hover aria-label="enviar">
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </form>
+
+      <p class="hero__subtitle">Recibe los versos antes que el mundo. Algunos no llegarán a ningún libro. Algunos solo viven en la noche del email.</p>
+
+      <button class="hero__manifesto liquid-glass" data-route="/manifiesto" data-hover>leer manifiesto</button>
+    </div>
+
+    <div class="hero__social">
+      <a href="#" class="liquid-glass" data-hover aria-label="Instagram">
+        <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37a4 4 0 1 1-7.914 1.18A4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      </a>
+      <a href="#" class="liquid-glass" data-hover aria-label="Twitter">
+        <svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+      </a>
+      <a href="#" class="liquid-glass" data-hover aria-label="Web">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- 2. ABOUT -->
+  <section class="about">
+    <div class="about__inner">
+      <p class="section-label reveal">Sobre Artemis</p>
+      <h2 class="about__title reveal" data-stagger="2">
+        <em>Versos que respiran</em> para
+        <br />
+        mentes que <em>callan, sangran e incendian.</em>
+      </h2>
+    </div>
+  </section>
+
+  <!-- 3. FEATURED VIDEO -->
+  <section class="featured">
+    <div class="featured__inner">
+      <div class="featured__container reveal">
+        <video class="featured__video" muted autoplay loop playsinline preload="auto">
+          <source src="media/featured.mp4" type="video/mp4">
+        </video>
+        <div class="featured__overlay-grad"></div>
+        <div class="featured__overlay">
+          <div class="featured__card liquid-glass">
+            <p class="featured__card-label">Su voz</p>
+            <p class="featured__card-body">Creemos que la poesía es lo que se dice cuando ya no se puede callar. Cada verso empieza con una herida, y cada herida abre otra puerta.</p>
+          </div>
+          <button class="featured__btn liquid-glass" data-route="/poemarios/la-mujer-que-no-se-calla" data-hover>leer un fragmento</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. PHILOSOPHY -->
+  <section class="philosophy">
+    <div class="philosophy__inner">
+      <h2 class="philosophy__title reveal">Cuerpo<em>×</em>Verso</h2>
+
+      <div class="philosophy__grid">
+        <div class="philosophy__video-wrap reveal-x-l">
+          <video muted autoplay loop playsinline preload="auto">
+            <source src="media/philosophy.mp4" type="video/mp4">
+          </video>
+        </div>
+
+        <div class="philosophy__text reveal-x-r">
+          <div class="philosophy__block">
+            <p class="philosophy__block-label">Cómo escribe</p>
+            <p class="philosophy__block-body">Cada poema importante nace en el cruce entre el cuerpo y el silencio. Artemis trabaja en ese filo: convierte lo que casi no puede decirse en versos que dejan marca, que rompen y curan a la vez.</p>
+          </div>
+          <div class="philosophy__divider"></div>
+          <div class="philosophy__block">
+            <p class="philosophy__block-label">Por qué importa</p>
+            <p class="philosophy__block-body">Los mejores libros aparecen cuando la rabia se vuelve forma. Su poesía no busca agradar — busca revelar lo que ya estaba pero nadie había nombrado.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. POEMARIOS (Services) -->
+  <section class="poemarios" id="poemariosSection">
+    <div class="poemarios__inner">
+      <div class="poemarios__head reveal">
+        <h2 class="poemarios__title">Poemarios</h2>
+        <p class="poemarios__sub">Su obra · 2014—2026</p>
+      </div>
+
+      <div class="poemarios__grid" id="poemariosGrid">
+        <!-- Cards rendered by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <p class="foot__verse reveal">
+      me callo —<br />
+      pero el <em>silencio</em> es mío.
+    </p>
+    <div class="foot__meta">
+      <span>© Artemis · MMXXVI</span>
+      <span>diseñado como un poema</span>
+      <span>todos los versos son suyos</span>
+    </div>
+  </footer>
+</main>
+
+<!-- POEMARIOS INDEX -->
+<main class="view hidden" id="view-poemarios">
+  <section class="poemarios-index">
+    <div class="poemarios-index__head">
+      <p class="section-label reveal">Su obra</p>
+      <h1 class="poemarios-index__title reveal" data-stagger="2">Poemarios <em>(2014—2026)</em></h1>
+      <p class="poemarios-index__sub reveal" data-stagger="3">Tres libros, trece años, una sola voz que aprendió a no callarse.</p>
+    </div>
+    <div class="poemarios__grid" id="poemariosGridFull"></div>
+  </section>
+</main>
+
+<!-- POEMARIO DETAIL -->
+<main class="view hidden" id="view-poemario">
+  <section class="poemario-detail" id="poemarioDetail"></section>
+</main>
+
+<!-- POEM DETAIL -->
+<main class="view hidden" id="view-poema">
+  <section class="poem-detail" id="poemDetail"></section>
+</main>
+
+<!-- ====================================================================
+     SCRIPTS
+     ==================================================================== -->
+<script>
+/* ============================================================
+   DATA — poemarios + poems
+   ============================================================ */
+const POEMARIOS = [
+  {
+    id: 'la-mujer-que-no-se-calla',
+    title: 'La mujer que no se calla',
+    year: 2024,
+    tag: '2024',
+    desc: 'Un libro sobre el grito que nunca llegó. Sobre el animal que vive en la garganta y la madre que vuelve a habitar la lengua.',
+    epigraph: 'Léelo despacio. No te perdona el ruido.',
+    video: 'media/card-1.mp4',
+    poems: [
+      { id: 'soy-lo-que-se-rompe', numeral: 'I', title: 'Soy lo que se rompe', verses: 'antes de mí\nya estaba\nesto que se rompe.\n\nsoy la grieta\nque aprendió a hablar.\n\ncuando me leas\nno busques el orden:\n_soy lo que sobra\ndel silencio._' },
+      { id: 'madre',                numeral: 'II', title: 'Madre', verses: 'madre,\ntodas las palabras\nson tuyas\n\nmenos\nlas que sangran.\n\nmenos\nlas que se quedan\n_después de la lengua._' },
+      { id: 'animal',               numeral: 'III', title: 'Animal', verses: 'en la lengua materna\ntodavía hay _un animal_\nsin nombre.\n\nlo escucho\ncada vez que callo —\n\ny aprendo de él\ncómo morder.' },
+      { id: 'hueco',                numeral: 'IV', title: 'Hueco', verses: 'soy mujer\ny eso ya es\n_haber roto algo._\n\ncada palabra mía\nnace del hueco\nque dejaron\notras.' },
+      { id: 'no-te-perdono',        numeral: 'V', title: 'No te perdono', verses: 'no te perdono el ruido,\nlector.\n\nvine a hablar\ny tú vienes\n_a oírte hablar de mí._' }
+    ]
+  },
+  {
+    id: 'el-silencio-fertil',
+    title: 'El silencio fértil',
+    year: 2019,
+    tag: '2019',
+    desc: 'El silencio como tierra cultivada. Lo que crece cuando las palabras se retiran. Memoria, cuerpo, herencia.',
+    epigraph: 'Lo que no se dijo, también es nuestro.',
+    video: 'media/card-2.mp4',
+    poems: [
+      { id: 'la-pagina',  numeral: 'I',  title: 'La página', verses: 'mi cuerpo es la página.\nmi voz, _una herida\nque aprendió a respirar._' },
+      { id: 'cosecha',    numeral: 'II', title: 'Cosecha', verses: 'no escribo —\nrecojo\nlo que los hombres\nhan dejado caer.\n\ncon eso\nhago _mis libros._' },
+      { id: 'boca',       numeral: 'III', title: 'Boca', verses: 'hay un silencio\nfértil en mí.\n\nde él brotan\nlas palabras\n_que nadie quiso._' },
+      { id: 'memoria',    numeral: 'IV', title: 'Memoria', verses: 'todo lo que olvido\nsigue diciéndose\n_en otro idioma_ —\n\nel de las cosas\nque no fueron mías\npero me usaron.' }
+    ]
+  },
+  {
+    id: 'carne-de-niebla',
+    title: 'Carne de niebla',
+    year: 2014,
+    tag: 'Debut',
+    desc: 'El primer libro. La búsqueda de una voz entre dos lenguas, dos cuerpos, dos formas de quedarse.',
+    epigraph: 'Antes de la palabra, ya había hambre.',
+    video: 'media/philosophy.mp4',
+    poems: [
+      { id: 'niebla',       numeral: 'I',  title: 'Niebla', verses: 'nací entre dos lenguas.\nninguna me alcanzaba.\n\npor eso aprendí\n_a hablar\ncon el cuerpo._' },
+      { id: 'bautismo',     numeral: 'II', title: 'Bautismo', verses: 'me llamaron Artemis\ny entendí\nque el nombre\n_no se elige._\n\nsolo\nse aprende a llevar.' },
+      { id: 'primer-verso', numeral: 'III', title: 'Primer verso', verses: 'escribí mi primer verso\ncon miedo.\n\nel segundo\ncon rabia.\n\nel tercero\n_ya era mío._' },
+      { id: 'carne',        numeral: 'IV', title: 'Carne', verses: 'la carne sabe\nlo que la lengua\n_todavía no nombra._\n\npor eso escribo —\npara alcanzarla.' }
+    ]
+  }
+];
+
+/* ============================================================
+   ROUTER
+   ============================================================ */
+const VIEWS = {
+  home: document.getElementById('view-home'),
+  poemarios: document.getElementById('view-poemarios'),
+  poemario: document.getElementById('view-poemario'),
+  poema: document.getElementById('view-poema')
+};
+const crumbsEl = document.getElementById('crumbs');
+const crumbsPath = document.getElementById('crumbsPath');
+const crumbsCount = document.getElementById('crumbsCount');
+
+function showView(name) {
+  Object.entries(VIEWS).forEach(([k, el]) => {
+    if (k === name) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+  });
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function setBreadcrumbs(segments, count) {
+  if (!segments || segments.length === 0) {
+    crumbsEl.classList.remove('is-visible');
+    return;
+  }
+  crumbsPath.innerHTML = segments.map((s, i) => {
+    const isLast = i === segments.length - 1;
+    const sepHtml = i > 0 ? '<span class="crumbs__sep">›</span>' : '';
+    const segHtml = `<span class="crumbs__seg ${isLast ? 'is-current' : ''}" data-route="${s.route}" data-hover>${s.label}</span>`;
+    return sepHtml + segHtml;
+  }).join('');
+  crumbsCount.textContent = count || '';
+  crumbsCount.style.display = count ? 'inline' : 'none';
+  crumbsEl.classList.add('is-visible');
+  // wire click handlers
+  crumbsPath.querySelectorAll('.crumbs__seg').forEach(seg => {
+    if (seg.classList.contains('is-current')) return;
+    seg.addEventListener('click', () => navigate(seg.dataset.route));
+  });
+}
+
+function findPoemario(id) { return POEMARIOS.find(p => p.id === id); }
+
+function renderHome() {
+  showView('home');
+  setBreadcrumbs(null);
+  setActiveLink('/');
+}
+
+function renderPoemariosIndex() {
+  showView('poemarios');
+  setBreadcrumbs([
+    { label: 'Inicio', route: '/' },
+    { label: 'Poemarios', route: '/poemarios' }
+  ], `${POEMARIOS.length} libros`);
+  setActiveLink('/poemarios');
+  const grid = document.getElementById('poemariosGridFull');
+  grid.innerHTML = POEMARIOS.map(cardHTML).join('');
+  wireCards(grid);
+}
+
+function renderPoemario(id) {
+  const p = findPoemario(id);
+  if (!p) return navigate('/poemarios');
+  showView('poemario');
+  setBreadcrumbs([
+    { label: 'Inicio', route: '/' },
+    { label: 'Poemarios', route: '/poemarios' },
+    { label: p.title, route: `/poemarios/${p.id}` }
+  ], `${p.poems.length} poemas`);
+  setActiveLink('/poemarios');
+
+  document.getElementById('poemarioDetail').innerHTML = `
+    <div class="poemario-detail__head">
+      <p class="poemario-detail__year reveal">${p.year} · poemario</p>
+      <h1 class="poemario-detail__title reveal" data-stagger="2">${p.title}</h1>
+      <p class="poemario-detail__desc reveal" data-stagger="3">${p.desc}</p>
+      <p class="poemario-detail__epigraph reveal" data-stagger="3">${p.epigraph}</p>
+    </div>
+    <div class="poemario-detail__poems">
+      ${p.poems.map((po, i) => `
+        <div class="poemario-detail__poem" data-route="/poemarios/${p.id}/${po.id}" data-hover>
+          <span class="poemario-detail__poem-num">${po.numeral}</span>
+          <span class="poemario-detail__poem-title">${po.title}</span>
+          <span class="poemario-detail__poem-arrow">leer</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.querySelectorAll('.poemario-detail__poem').forEach(el => {
+    el.addEventListener('click', () => navigate(el.dataset.route));
+  });
+  triggerReveal();
+}
+
+function renderPoem(poemarioId, poemId) {
+  const p = findPoemario(poemarioId);
+  if (!p) return navigate('/poemarios');
+  const poem = p.poems.find(po => po.id === poemId);
+  if (!poem) return navigate(`/poemarios/${poemarioId}`);
+
+  showView('poema');
+  setBreadcrumbs([
+    { label: 'Inicio', route: '/' },
+    { label: 'Poemarios', route: '/poemarios' },
+    { label: p.title, route: `/poemarios/${p.id}` },
+    { label: `${poem.numeral}. ${poem.title}`, route: `/poemarios/${p.id}/${poem.id}` }
+  ], `${p.poems.findIndex(x => x.id === poemId) + 1} de ${p.poems.length}`);
+
+  const idx = p.poems.findIndex(x => x.id === poemId);
+  const prev = p.poems[idx - 1];
+  const next = p.poems[idx + 1];
+
+  const formatVerses = (v) => v.replace(/_(.*?)_/g, '<em>$1</em>');
+
+  document.getElementById('poemDetail').innerHTML = `
+    <p class="poem-detail__numeral reveal">${poem.numeral} · ${p.title}</p>
+    <h1 class="poem-detail__title reveal" data-stagger="2">${poem.title}</h1>
+    <div class="poem-detail__verses reveal" data-stagger="3">${formatVerses(poem.verses)}</div>
+    <div class="poem-detail__nav reveal" data-stagger="3">
+      ${prev
+        ? `<button class="poem-detail__nav-btn" data-route="/poemarios/${p.id}/${prev.id}" data-hover>← anterior<span>${prev.title}</span></button>`
+        : `<span class="poem-detail__nav-btn is-disabled"></span>`}
+      ${next
+        ? `<button class="poem-detail__nav-btn is-right" data-route="/poemarios/${p.id}/${next.id}" data-hover>siguiente →<span>${next.title}</span></button>`
+        : `<span class="poem-detail__nav-btn is-disabled"></span>`}
+    </div>
+  `;
+  document.querySelectorAll('.poem-detail__nav-btn[data-route]').forEach(el => {
+    el.addEventListener('click', () => navigate(el.dataset.route));
+  });
+  triggerReveal();
+}
+
+function navigate(path) {
+  if (!path.startsWith('/')) path = '/' + path;
+  if (location.hash !== '#' + path) location.hash = path;
+  else route();
+}
+
+function route() {
+  const path = (location.hash.slice(1) || '/').replace(/\/+$/, '') || '/';
+  const parts = path.split('/').filter(Boolean);
+
+  if (parts.length === 0) {
+    renderHome();
+  } else if (parts[0] === 'poemarios' && !parts[1]) {
+    renderPoemariosIndex();
+  } else if (parts[0] === 'poemarios' && parts[1] && !parts[2]) {
+    renderPoemario(parts[1]);
+  } else if (parts[0] === 'poemarios' && parts[2]) {
+    renderPoem(parts[1], parts[2]);
+  } else if (parts[0] === 'manifiesto') {
+    // Stub: jump to poemarios index for now (could route to a manifiesto view)
+    renderPoemariosIndex();
+  } else if (parts[0] === 'lecturas' || parts[0] === 'sobre' || parts[0] === 'encuentro') {
+    renderHome();
+  } else {
+    renderHome();
+  }
+}
+
+function setActiveLink(path) {
+  document.querySelectorAll('.nav__link').forEach(a => {
+    a.classList.toggle('is-active', a.dataset.route === path);
+  });
+}
+
+/* ============================================================
+   CARDS RENDER
+   ============================================================ */
+function cardHTML(p, i) {
+  return `
+    <a class="poemario-card liquid-glass reveal" data-route="/poemarios/${p.id}" data-stagger="${(i % 3) + 1}" data-hover>
+      <div class="poemario-card__media">
+        <video muted autoplay loop playsinline preload="auto">
+          <source src="${p.video}" type="video/mp4">
+        </video>
+        <div class="poemario-card__media-grad"></div>
+      </div>
+      <div class="poemario-card__body">
+        <div class="poemario-card__top">
+          <span class="poemario-card__tag">${p.tag}</span>
+          <span class="poemario-card__arrow liquid-glass">
+            <svg viewBox="0 0 24 24"><path d="M7 17L17 7M7 7h10v10"/></svg>
+          </span>
+        </div>
+        <h3 class="poemario-card__title">${p.title}</h3>
+        <p class="poemario-card__desc">${p.desc}</p>
+      </div>
+    </a>
+  `;
+}
+
+function wireCards(scope = document) {
+  scope.querySelectorAll('.poemario-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigate(card.dataset.route);
+    });
+  });
+}
+
+document.getElementById('poemariosGrid').innerHTML = POEMARIOS.map(cardHTML).join('');
+wireCards();
+
+/* ============================================================
+   GLOBAL ROUTE CLICKS
+   ============================================================ */
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('[data-route]');
+  if (!target) return;
+  if (target.classList.contains('crumbs__seg')) return; // handled separately
+  if (target.classList.contains('poemario-card')) return; // handled separately
+  if (target.classList.contains('poemario-detail__poem')) return;
+  if (target.classList.contains('poem-detail__nav-btn')) return;
+  e.preventDefault();
+  navigate(target.dataset.route);
+});
+
+/* ============================================================
+   SEARCH
+   ============================================================ */
+const searchModal = document.getElementById('searchModal');
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+
+function openSearch() {
+  searchModal.classList.add('is-open');
+  setTimeout(() => searchInput.focus(), 100);
+  renderSearchResults('');
+}
+function closeSearch() {
+  searchModal.classList.remove('is-open');
+  searchInput.value = '';
+}
+document.getElementById('searchOpen').addEventListener('click', openSearch);
+document.getElementById('searchClose').addEventListener('click', closeSearch);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeSearch();
+  if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); openSearch(); }
+  if (e.key === '/' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); openSearch(); }
+});
+searchModal.addEventListener('click', (e) => {
+  if (e.target === searchModal) closeSearch();
+});
+
+function highlight(text, q) {
+  if (!q) return text;
+  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  return text.replace(re, '<mark>$1</mark>');
+}
+
+function renderSearchResults(q) {
+  const query = q.trim().toLowerCase();
+  searchResults.innerHTML = '';
+  if (!query) {
+    searchResults.innerHTML = `
+      <div class="search__empty">empieza a escribir —<br>todo lo que ella escribió, está aquí.</div>
+    `;
+    return;
+  }
+  const matches = [];
+  POEMARIOS.forEach(p => {
+    if (p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query)) {
+      matches.push({
+        type: 'poemario',
+        crumbs: `Poemarios · ${p.year}`,
+        title: p.title,
+        excerpt: p.desc,
+        route: `/poemarios/${p.id}`
+      });
+    }
+    p.poems.forEach(po => {
+      const cleanVerses = po.verses.replace(/_/g, '');
+      if (po.title.toLowerCase().includes(query) || cleanVerses.toLowerCase().includes(query)) {
+        // find first matching line
+        const lines = cleanVerses.split('\n').filter(l => l.trim());
+        const matchedLine = lines.find(l => l.toLowerCase().includes(query)) || lines[0];
+        matches.push({
+          type: 'poem',
+          crumbs: `${p.title} · ${po.numeral}`,
+          title: po.title,
+          excerpt: matchedLine,
+          route: `/poemarios/${p.id}/${po.id}`
+        });
+      }
+    });
+  });
+  if (matches.length === 0) {
+    searchResults.innerHTML = `<div class="search__empty">nada que coincida con <em>"${q}"</em>.<br>prueba otra palabra.</div>`;
+    return;
+  }
+  searchResults.innerHTML = matches.map(m => `
+    <div class="search__result" data-route="${m.route}">
+      <div class="search__result-crumbs">${highlight(m.crumbs, query)}</div>
+      <div class="search__result-title">${highlight(m.title, query)}</div>
+      <div class="search__result-excerpt">${highlight(m.excerpt, query)}</div>
+    </div>
+  `).join('');
+  searchResults.querySelectorAll('.search__result').forEach(el => {
+    el.addEventListener('click', () => {
+      navigate(el.dataset.route);
+      closeSearch();
+    });
+  });
+}
+searchInput.addEventListener('input', (e) => renderSearchResults(e.target.value));
+
+/* ============================================================
+   GATE / OPENING
+   ============================================================ */
+window.addEventListener('load', () => {
+  const gate = document.getElementById('gate');
+  requestAnimationFrame(() => {
+    gate.classList.add('is-shown');
+    setTimeout(() => {
+      gate.classList.remove('is-shown');
+      gate.classList.add('is-loaded');
+      setTimeout(() => gate.style.display = 'none', 2200);
+    }, 1200);
+  });
+  // initial route
+  route();
+});
+window.addEventListener('hashchange', route);
+
+/* ============================================================
+   CURSOR
+   ============================================================ */
+(() => {
+  if (window.matchMedia('(max-width: 720px)').matches) return;
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let rx = mx, ry = my;
+  document.addEventListener('mousemove', (e) => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+  });
+  function loop() {
+    rx += (mx - rx) * 0.14;
+    ry += (my - ry) * 0.14;
+    ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+    requestAnimationFrame(loop);
+  }
+  loop();
+  // delegate hover
+  document.addEventListener('mouseover', (e) => {
+    const t = e.target.closest('[data-hover], a, button, input');
+    if (t) {
+      dot.classList.add('is-hovering');
+      ring.classList.add('is-hovering');
+    }
+  });
+  document.addEventListener('mouseout', (e) => {
+    const t = e.target.closest('[data-hover], a, button, input');
+    if (t) {
+      dot.classList.remove('is-hovering');
+      ring.classList.remove('is-hovering');
+    }
+  });
+})();
+
+/* ============================================================
+   HERO VIDEO FADE LOOP — per spec
+   ============================================================ */
+(() => {
+  const v = document.getElementById('heroVideo');
+  if (!v) return;
+  let raf;
+  function animateOpacity(from, to, ms, done) {
+    cancelAnimationFrame(raf);
+    const start = performance.now();
+    function step(t) {
+      const k = Math.min(1, (t - start) / ms);
+      v.style.opacity = (from + (to - from) * k).toString();
+      if (k < 1) raf = requestAnimationFrame(step);
+      else done && done();
+    }
+    raf = requestAnimationFrame(step);
+  }
+  v.addEventListener('canplay', () => {
+    v.play().then(() => animateOpacity(0, 1, 700)).catch(() => {});
+  });
+})();
+
+/* ============================================================
+   REVEAL ON SCROLL
+   ============================================================ */
+const revealIO = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('is-visible');
+      revealIO.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+
+function triggerReveal() {
+  document.querySelectorAll('.reveal:not(.is-visible), .reveal-x-l:not(.is-visible), .reveal-x-r:not(.is-visible)').forEach(el => revealIO.observe(el));
+}
+triggerReveal();
+</script>
+
+</body>
+</html>
